@@ -1,0 +1,66 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>chatterbox</title>
+    
+    <!--Import Google Icon Font-->
+    <link href="http://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!-- Compiled and minified CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.1/css/materialize.min.css">
+    <!--Let browser know website is optimized for mobile-->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+    <link rel="stylesheet" href="styles/styles.css">
+  </head>
+  <body>
+
+    <div class="navbar-fixed">
+      <nav class="purple darken-2">
+        <div class="nav-wrapper container">
+          <a href="#!" class="brand-logo">Chatterbox</a>
+          <ul class="right hide-on-med-and-down">
+            <li>
+              <a class="dropdown-button roomDropDown" href="#!" data-activates="roomDropList">
+                <ul id="roomDropList" class="dropdown-content"></ul>
+                All Rooms
+                <i class="material-icons right">arrow_drop_down</i>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </nav>
+    </div>
+
+    <main>
+      <div class="container messageBox">
+        <div class="row">
+          <div class="col s12">
+            <div id="messages"></div>
+          </div>
+        </div>
+      </div>
+    </main>
+    
+    <footer class="page-footer grey">
+      <div class="row container">
+        <div class="col s12" id="newMessageInput">
+          <form id="send">
+            <input placeholder="What do you want to say..." id="newMessage" type="text">
+            <!-- <input type="submit" name="submit" class="btn"></input> -->
+          </form>
+        </div>
+      </div>
+    </footer>
+
+    <!--Import jQuery before materialize.js-->
+    <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+    <!-- Compiled and minified JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.1/js/materialize.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/backbone.js/1.2.3/backbone-min.js"></script>
+    <!-- your scripts -->
+    <script src="env/config.js"></script>
+    <script src="scripts/bbApp.js"></script>
+  </body>
+</html>

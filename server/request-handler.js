@@ -12,48 +12,90 @@ this file and include it in basic-server.js so that it actually works.
 
 **************************************************************/
 
+var _ = require('underscore');
+
+
+var _storage = [];
+
+var insertNewMessage = function(message) {
+  message.createdAt = new Date();
+  message.objectId = JSON.stringify(message);
+  _storage.push(message);
+};
+
+var getMessages = function(room) {
+  if(!room){return _storage;}
+  return _.filter(_storage, function(value, key, list){
+    return value.roomname === room;
+  });
+};
+
+// insertNewMessage({
+//       username: 'nick',
+//       text: 'hello everyone',
+//       roomname: 'homeroom'
+//     });
+
+console.log(_storage);
+
 var requestHandler = function(request, response) {
-  // Request and Response come from node's http module.
-  //
-  // They include information about both the incoming request, such as
-  // headers and URL, and about the outgoing response, such as its status
-  // and content.
-  //
-  // Documentation for both request and response can be found in the HTTP section at
-  // http://nodejs.org/documentation/api/
 
-  // Do some basic logging.
-  //
-  // Adding more logging to your server can be an easy way to get passive
-  // debugging help, but you should always be careful about leaving stray
-  // console.logs in your code.
-  console.log("Serving request type " + request.method + " for url " + request.url);
+  console.log(request.method);
 
-  // The outgoing status.
-  var statusCode = 200;
-
-  // See the note below about CORS headers.
   var headers = defaultCorsHeaders;
 
-  // Tell the client we are sending them plain text.
-  //
-  // You will need to change this if you are sending something
-  // other than plain text, like JSON or HTML.
   headers['Content-Type'] = "text/plain";
 
-  // .writeHead() writes to the request line and headers of the response,
-  // which includes the status and all headers.
-  response.writeHead(statusCode, headers);
+  var url = request.url.split("/");
 
-  // Make sure to always call response.end() - Node may not send
-  // anything back to the client until you do. The string you pass to
-  // response.end() will be the body of the response - i.e. what shows
-  // up in the browser.
-  //
-  // Calling .end "flushes" the response's internal buffer, forcing
-  // node to actually send all the data over to the client.
-  response.end("Hello, World!");
+
+  var statusCode = 404;
+  var outgoingBody = "404 - Not Found";
+  console.log(request.url);
+  switch(url[1]) {
+    case 'classes':
+      if(url[2] === 'messages'){
+        if(request.method === 'GET') {
+          console.log('getting messages');
+          statusCode = 200;
+          outgoingBody = JSON.stringify({results:getMessages()});
+        } else if(request.method === 'POST') {
+          console.log('making new message');
+          statusCode = 201;
+          request.on('data', function(chunk) {
+            insertNewMessage(JSON.parse(chunk.toString()));
+          });
+
+          outgoingBody = 'inserted new message';
+        }
+        break;
+      }else{
+        if(request.method === 'GET') {
+          statusCode = 200;
+          outgoingBody = JSON.stringify({results:getMessages(url[2])});
+        } else if(request.method === 'POST') {
+          statusCode = 201;
+          request.on('data', function (chunk) {
+            // console.log(chunk.toString);
+            chunk = JSON.parse(chunk.toString());
+            chunk.roomname = url[2];
+            insertNewMessage(chunk);
+          });
+        }
+      }
+      break;
+    default:
+      break;
+  }
+
+
+
+
+  response.writeHead(statusCode, headers);
+  response.end(outgoingBody);
+
 };
+
 
 // These headers will allow Cross-Origin Resource Sharing (CORS).
 // This code allows this server to talk to websites that
@@ -67,7 +109,46 @@ var requestHandler = function(request, response) {
 var defaultCorsHeaders = {
   "access-control-allow-origin": "*",
   "access-control-allow-methods": "GET, POST, PUT, DELETE, OPTIONS",
-  "access-control-allow-headers": "content-type, accept",
+  "access-control-allow-headers": "content-type, accept, X-Parse-Application-Id, X-Parse-REST-API-Key",
   "access-control-max-age": 10 // Seconds.
 };
 
+
+
+exports.requestHandler = requestHandler;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  // if(request.method === 'GET') {
+  //   if(request.url === '/classes/messages/'){
+  //     outgoingBody = JSON.stringify({results:getMessages()});
+  //   }
+  // } else if(request.method === 'POST') {
+  //   if(request.url === '/classes/messages/'){
+  //     request.on('data', function(chunk) {
+  //       console.log("Received body data:");
+  //       insertNewMessage(JSON.parse(chunk.toString()));
+  //     });
+  //     // insertNewMessage(request.data);
+  //     outgoingBody = 'inserted new message';
+  //   }
+  // }
