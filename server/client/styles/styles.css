@@ -1,0 +1,25 @@
+footer {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  
+}
+
+main .messageBox{
+  padding-bottom: 6em;
+}
+
+
+.messageBox{
+  overflow:   none;
+  position:   relative;
+  height:     750px;
+}
+
+#messages{
+  overflow:   auto;
+  position:   absolute;
+  bottom:     0;
+  width: 100%;
+  max-height: 750px;
+}

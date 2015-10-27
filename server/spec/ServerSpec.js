@@ -36,7 +36,7 @@ describe('Node Server Request Listener Function', function() {
   it('Should send back an object', function() {
     var req = new stubs.request('/classes/room1', 'GET');
     var res = new stubs.response();
-
+    
     handler.requestHandler(req, res);
 
     var parsedBody = JSON.parse(res._data);

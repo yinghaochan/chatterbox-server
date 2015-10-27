@@ -12,6 +12,7 @@ this file and include it in basic-server.js so that it actually works.
 
 **************************************************************/
 
+var fs = require('fs');
 var _ = require('underscore');
 
 
@@ -25,9 +26,10 @@ var insertNewMessage = function(message) {
 
 var getMessages = function(room) {
   if(!room){return _storage;}
-  return _.filter(_storage, function(value, key, list){
+  var msgArr =  _.filter(_storage, function(value, key, list){
     return value.roomname === room;
   });
+  return JSON.stringify({results: msgArr});
 };
 
 // insertNewMessage({
@@ -39,62 +41,156 @@ var getMessages = function(room) {
 console.log(_storage);
 
 var requestHandler = function(request, response) {
+  console.log('url: ' + request.url.split('?')[0] + '.');
+  var _response = {
+    status: 404,
+    headers: defaultCorsHeaders,
+    write: undefined,
+    end: undefined
+  };
+  // debugger; 
+  var parseUrl = function () {
+    var url = request.url;
+    url = url.split('?')[0];
+    if(url === '/'){return serveHtml('client/bbindex.html');}
+    urlSplit = url.split('/');
+    if(urlSplit[1] === 'classes') {
+      return serveAjax(urlSplit[2]);
+    }else{
+      return serveHtml('client' + url); 
+    }
+  };
 
-  console.log(request.method);
+  var serveHtml = function (address) {
+    fs.readFile(address, function (err, data) {
+      _response.status = 200;
+      _response.headers['Content-Type'] = "text/" + address.split('.')[1] || 'html';
+      _response.write = data;
+      console.log(_response);
+    });
+  };
 
-  var headers = defaultCorsHeaders;
+var serveAjax = function (roomname) {
+  if(request.method === 'GET'){
+    _response.status = 200;
+    _response.headers['Content-Type'] = "application/json"; 
+    _response.end = getMessages(roomname);
+  }else if(request.method === 'POST'){
+    _response.status = 201;
+    _response.headers['Content-Type'] = "text/plain";
+    request.on('data', function (chunk) {
+      var msgObj = JSON.parse(chunk.toString());
+      if(!msgObj.roomname){ msgObj.roomname = "lobby";}
+      insertNewMessage(msgObj);
+    });
 
-  headers['Content-Type'] = "text/plain";
-
-  var url = request.url.split("/");
-
-
-  var statusCode = 404;
-  var outgoingBody = "404 - Not Found";
-  console.log(request.url);
-  switch(url[1]) {
-    case 'classes':
-      if(url[2] === 'messages'){
-        if(request.method === 'GET') {
-          console.log('getting messages');
-          statusCode = 200;
-          outgoingBody = JSON.stringify({results:getMessages()});
-        } else if(request.method === 'POST') {
-          console.log('making new message');
-          statusCode = 201;
-          request.on('data', function(chunk) {
-            insertNewMessage(JSON.parse(chunk.toString()));
-          });
-
-          outgoingBody = 'inserted new message';
-        }
-        break;
-      }else{
-        if(request.method === 'GET') {
-          statusCode = 200;
-          outgoingBody = JSON.stringify({results:getMessages(url[2])});
-        } else if(request.method === 'POST') {
-          statusCode = 201;
-          request.on('data', function (chunk) {
-            // console.log(chunk.toString);
-            chunk = JSON.parse(chunk.toString());
-            chunk.roomname = url[2];
-            insertNewMessage(chunk);
-          });
-        }
-      }
-      break;
-    default:
-      break;
   }
+};
 
+if(request.method === "OPTIONS"){
+  _response.status = 200;
+  _response.headers.Allow = 'GET,POST';
+}else{
+  parseUrl();
+}
 
-
-
-  response.writeHead(statusCode, headers);
-  response.end(outgoingBody);
+response.writeHead(_response.status, _response.headers);
+if(_response.write) response.write(_response.write);
+response.end? response.end(_response.end) : response.end();
 
 };
+
+//   console.log(request.method);
+
+//   var headers = defaultCorsHeaders;
+
+//   var url = request.url.split("/");
+
+
+//   var statusCode = 404;
+//   var outgoingBody = "404 - Not Found";
+//   console.log(request.url);
+//   switch(url[1]) {
+//     case '':
+//       console.log('serving status client files');
+//       console.log(request.url);
+
+//       fs.readFile('client/bbindex.html', function (err,data) {
+//         // if (err) {
+//         //   console.log(__dirname);
+//         //   console.log('error '+err);
+//         //   statusCode = 404;
+//         //   outgoingBody =JSON.stringify(err);
+//         //   return;
+//         // }
+//         // console.log(data.toString());
+//         statusCode = 200;
+//         headers['Content-Type'] = "text/html";
+//         response.writeHead(statusCode, headers);
+//         response.write(data);
+//         response.end();
+//         return;
+//         // outgoingBody = data;
+//       });
+
+//       break;
+//     case 'classes':
+//       if(url[2] === 'messages'){
+//         if(request.method === 'GET') {
+//           console.log('getting messages');
+//           statusCode = 200;
+//           headers['Content-Type'] = "application/json";
+//           outgoingBody = JSON.stringify({results:getMessages()});
+//         } else if(request.method === 'POST') {
+//           console.log('making new message');
+//           statusCode = 201;
+//           headers['Content-Type'] = "text/plain";
+//           request.on('data', function(chunk) {
+//             insertNewMessage(JSON.parse(chunk.toString()));
+//           });
+
+//           outgoingBody = 'inserted new message';
+//         } else if(request.method === 'OPTIONS') {
+//           statusCode = 200;
+//           outgoingBody = "LOOK AT THE DOCS YOU FOOL!";
+//           headers['Allow'] = 'GET,POST';
+//         }
+//         break;
+//       }else{
+//         if(request.method === 'GET') {
+//           statusCode = 200;
+//           headers['Content-Type'] = "application/json";
+//           outgoingBody = JSON.stringify({results:getMessages(url[2])});
+//         } else if(request.method === 'POST') {
+//           statusCode = 201;
+//           headers['Content-Type'] = "text/plain";
+//           request.on('data', function (chunk) {
+//             // console.log(chunk.toString);
+//             chunk = JSON.parse(chunk.toString());
+//             chunk.roomname = url[2];
+//             insertNewMessage(chunk);
+//           });
+//         }
+//       }
+//       break;
+//     case()
+//     default:
+//       fs.readFile('client/' + request.url, function (err, data) {
+//         response.writeHead(200, {'Content-Type': 'text/' + request.url.split('.').reverse()[0]});
+//         response.write(data);
+//         response.end();
+//         return; 
+//       })
+//       break;
+//   }
+
+
+
+
+//   // response.writeHead(statusCode, headers);
+//   // response.end(outgoingBody);
+
+// };
 
 
 // These headers will allow Cross-Origin Resource Sharing (CORS).
