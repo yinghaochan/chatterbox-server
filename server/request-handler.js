@@ -38,35 +38,40 @@ var getMessages = function(room) {
 //       roomname: 'homeroom'
 //     });
 
-console.log(_storage);
+// console.log(_storage);
 
 var requestHandler = function(request, response) {
-  console.log('url: ' + request.url.split('?')[0] + '.');
+  // console.log('url: ' + request.url.split('?')[0] + '.');
   var _response = {
     status: 404,
-    headers: defaultCorsHeaders,
+    headers: {},
     write: undefined,
     end: undefined
   };
+  // _response.headers["access-control-allow-headers"] = defaultCorsHeaders["access-control-allow-headers"];
   // debugger; 
+
   var parseUrl = function () {
     var url = request.url;
     url = url.split('?')[0];
-    if(url === '/'){return serveHtml('client/bbindex.html');}
+    if(url === '/'){return serveHtml('/client/bbindex.html');}
     urlSplit = url.split('/');
     if(urlSplit[1] === 'classes') {
       return serveAjax(urlSplit[2]);
     }else{
-      return serveHtml('client' + url); 
+      return serveHtml('/client' + url); 
     }
   };
 
   var serveHtml = function (address) {
+    console.log(__dirname +  address);
     fs.readFile(address, function (err, data) {
-      _response.status = 200;
-      _response.headers['Content-Type'] = "text/" + address.split('.')[1] || 'html';
-      _response.write = data;
-      console.log(_response);
+      var header = {};
+      header['Content-Type'] = "text/" + (address.split('.')[1] && 'html');
+      response.writeHead(200, header);
+      response.write = data;
+      response.end();
+      return;
     });
   };
 
@@ -80,7 +85,7 @@ var serveAjax = function (roomname) {
     _response.headers['Content-Type'] = "text/plain";
     request.on('data', function (chunk) {
       var msgObj = JSON.parse(chunk.toString());
-      if(!msgObj.roomname){ msgObj.roomname = "lobby";}
+      if(!msgObj.roomname){ msgObj.roomname = roomname;}
       insertNewMessage(msgObj);
     });
 
