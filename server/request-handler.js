@@ -69,8 +69,8 @@ var requestHandler = function(request, response) {
       var header = {};
       header['Content-Type'] = "text/" + (address.split('.')[1] && 'html');
       response.writeHead(200, header);
-      response.write = data;
-      response.end();
+      // response.write = data;
+      response.end(data);
       return;
     });
   };

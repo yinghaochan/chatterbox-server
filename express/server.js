@@ -2,26 +2,9 @@ var express = require('express');
 var app = express();
 var _ = require('underscore');
 var path = require('path');
+var monk = require('monk');
+var db = monk('mongodb://chatterAdmin:chadmin@ds045664.mongolab.com:45664/chatterbox');
 
-var _storage = [];
-var insertMsg = function(message) {
-  message.createdAt = new Date();
-  message.objectId = _storage.length;
-  _storage.push(message);
-};
-var getMsg = function(room) {
-  if(!room){return JSON.stringify({results: _storage});}
-  var msgArr =  _.filter(_storage, function(value, key, list){
-    return value.roomname === room;
-  });
-  return JSON.stringify({results: msgArr});
-};
-
-insertMsg({
-      username: 'nick',
-      text: 'hello everyone',
-      roomname: 'homeroom'
-    });
 
 app.use(require('morgan')('dev'));
 app.use(require('body-parser').json());
@@ -31,15 +14,24 @@ app.get('/', function (req, res) {
   res.sendFile(path.join(__dirname, '../client/bbIndex.html'));
 });
 app.use(express.static('../client'));
+app.use(function (req, res, next) {
+  req.db = db;
+  req.msgs = db.get('messages');
+  next();
+});
+
 
 app.get('/classes/:room', function (req, res) {
-  var room = req.params.room;
-  if(room === 'messages') room = '';
-  res.send(getMsg(room));
+  req.msgs.find({},{},function (e, docs) {
+  res.send(docs);
+  });
 });
 
 app.post('/classes/:room', function (req, res) {
-  insertMsg(req.body);
+  var message = {username: req.body.username, text: req.body.text, createdAt: new Date()};
+  // console.log(message);
+  req.msgs.insert(message);
+  res.send("success!");
 });
 
 app.listen(3000);
