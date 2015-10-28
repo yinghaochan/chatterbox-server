@@ -11,9 +11,9 @@ app.use(require('body-parser').json());
 
 //routes
 app.get('/', function (req, res) {
-  res.sendFile(path.join(__dirname, '../client/bbIndex.html'));
+  res.sendFile(path.join(__dirname, '../client/index.html'));
 });
-app.use(express.static('../client'));
+app.use(express.static(path.join(__dirname , '../client')));
 app.use(function (req, res, next) {
   req.db = db;
   req.msgs = db.get('messages');
@@ -23,7 +23,8 @@ app.use(function (req, res, next) {
 
 app.get('/classes/:room', function (req, res) {
   req.msgs.find({},{},function (e, docs) {
-  res.send(docs);
+    // console.log(docs);
+  res.send({'results': docs});
   });
 });
 

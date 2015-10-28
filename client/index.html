@@ -1,98 +1,72 @@
 <!doctype html>
 <html>
-  <head>
-    <meta charset="utf-8">
-    <title>chatterbox</title>
-    
-    <!--Import Google Icon Font-->
-    <link href="http://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <!-- Compiled and minified CSS -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.1/css/materialize.min.css">
-    <!--Let browser know website is optimized for mobile-->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<head>
+  <meta charset="utf-8">
+  <title>chatterbox</title>
 
-    <link rel="stylesheet" href="styles/styles.css">
-  </head>
-  <body>
-    <nav>
-      <div class="nav-wrapper purple darken-2">
-        <a href="#" class="brand-logo">ChatterBox</a>
-      </div>
-    </nav>
-    <main>
-      <div class="row grey darken-3">
-        <div class="col s3">
-          <form id="submitNewRoom">
-            <input type="text" id="newRoom" placeholder="Room name..."></input>
-          </form>
-          <div id='roomSelect' class="collection"></div>
-        </div>
-        <div class="col s9 white">
-          <div id="chats"></div>
-        </div>
-      </div>
-    </main>
-    <footer class="page-footer grey">
-      <div class="container">
-        <div class="row">
-          <div class="col s9 offset-s3">
-            <form id="submit">
-              <div class="row">
-                <div class="col s10">
-                  <input type="text" id="message" placeholder="Type what you want!"></input>
-                </div>
-                <div class="col s2">
-                  <input type="submit" class="btn waves-light right" id="send"></input>
-                </div>
+  <!--Import Google Icon Font-->
+  <link href="http://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <!-- Compiled and minified CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.1/css/materialize.min.css">
+  <!--Let browser know website is optimized for mobile-->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+  <link rel="stylesheet" href="styles/styles.css">
+</head>
+<body>
+
+  <div class="navbar-fixed">
+    <nav class="purple darken-2">
+      <div class="nav-wrapper container">
+        <a href="#!" class="brand-logo">Chatterbox</a>
+        <ul class="right hide-on-med-and-down">
+          <li>
+            <form>
+              <div class="input-field">
+                <input id="userName" type="search" placeholder="Guest" required>
               </div>
             </form>
-          </div>
-        </div>
+          </li>
+          <li>
+            <a class="dropdown-button roomDropDown" href="#!" data-activates="roomDropList">
+              <ul id="roomDropList" class="dropdown-content"></ul>
+              <span id="currentRoom">All Rooms</span>
+              <i class="material-icons right">arrow_drop_down</i>
+            </a>
+          </li>
+        </ul>
       </div>
-    </footer>
+    </nav>
+  </div>
 
-    <!--Import jQuery before materialize.js-->
-    <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
-    <!-- Compiled and minified JavaScript -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.1/js/materialize.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/backbone.js/1.2.3/backbone-min.js"></script>
-    <!-- your scripts -->
-    <script src="env/config.js"></script>
-    <script src="scripts/app.js"></script>
-  </body>
-</html>
-
-
-
-
-
-<!-- Original ugly layout -->
-<!--     <div class="container">
-      <div class="row" id="main">
-        <div class="col-xs-1"></div>
-        <div class="addRoom col-xs-3">
-          <form id="submitNewRoom">
-            <input type="text" id="newRoom" placeholder="Room name..."></input>
-            <input type="submit" class="btn btn-primary btn-sm" id="sendNewRoom"></input>
-          </form>
-        </div>
-        <div class="main col-xs-8">
-          <h1>Chatterbox</h1>
-          <form id="submit">
-            
-            <input type="text" id="message" placeholder="Type what you want!"></input>
-            <input type="submit" class="btn btn-primary btn-sm" id="send"></input>
-          </form>
-        </div>
-        <div class="col-xs-2"></div>
-      </div>
+  <main>
+    <div class="container messageBox">
       <div class="row">
-        <div class="col-xs-1"></div>
-        <div id="roombox" class="col-xs-3">
-          <ul id='roomSelect'>
+        <div class="col s12">
+          <div id="messages"></div>
         </div>
-        <div id="chats" class="col-xs-6"></div>
-        <div class="col-xs-1"></div>
       </div>
-    </div> -->
+    </div>
+  </main>
+
+  <footer class="page-footer grey">
+    <div class="row container">
+      <div class="col s12" id="newMessageInput">
+        <form id="send">
+          <input placeholder="What do you want to say..." id="newMessage" type="text">
+          <!-- <input type="submit" name="submit" class="btn"></input> -->
+        </form>
+      </div>
+    </div>
+  </footer>
+
+  <!--Import jQuery before materialize.js-->
+  <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <!-- Compiled and minified JavaScript -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.1/js/materialize.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/backbone.js/1.2.3/backbone-min.js"></script>
+  <!-- your scripts -->
+  <script src="scripts/bbApp.js"></script>
+</body>
+</html>

@@ -22,7 +22,22 @@ var Messages = Backbone.Collection.extend({
   //url to which we want to make the API call
   url: 'http://127.0.0.1:3000/classes/messages',
   // url: 'https://api.parse.com/1/classes/chatterbox',
-  
+
+  initialize: function() {
+
+    this.listenTo(this,'changingRoom',this.getRoomMessages);
+    this.host = 'http://127.0.0.1:3000/classes/';
+
+  },
+
+  getRoomMessages: function(room) {
+
+    this.url = this.host + room;
+    console.log('about to refresh data to room ' + this.url);
+
+    this.getMessages();
+
+  },
 
   //if we want to add in data parameters to filter a API call, we need to wrap the given fetch method with another method
   getMessages: function() {
@@ -41,7 +56,9 @@ var Messages = Backbone.Collection.extend({
     //we need to customize this for each api call for other implementations
       //for this one, it happens to be results
     // console.log(res.results);
-    return res.results.reverse();
+    return res.results;
+    // return res.results.reverse();
+
   }
 
 });
@@ -51,7 +68,7 @@ var MessageView = Backbone.View.extend({
   //the template variable on a Backbone model is used to store the template for the dom element that we will be createing
   // <%- attribute %> denotes a placeholder that will automatically be filled by back bone by calling the template and passing it a model
     //the model that is passed to template must contain the variable in it, or else it will just be null
-  template: _.template('<div><%- createdAt %> : <%- username %> : <%- text %></div>'),
+  template: _.template('<div><%- roomname %> : <%- username %> : <%- text %></div>'),
 
   render: function() {
     //generating an instance of the template with it's values filled in with the model passed to the view
@@ -82,20 +99,24 @@ var MessagesView = Backbone.View.extend({
   },
 
   events: {
-    'click .roomLink': 'changeRoom'
+    // 'click .roomLink': 'changeRoom'
   },
 
   changeRoom: function(e) {
-    console.log(e);
+    // this.msgsInDom = {};
+    // this.currentRoom = e.toElement.text;
   },
 
   render: function() {
     //we need to loop through each of the items in the collection, and render them on the screen
+    this.msgsInDom = {};
+    this.$el.children().detach();
     this.collection.forEach(this.renderMessage,this);
   },
 
   renderMessage: function(message) {
-    if(!this.msgsInDom[message.get('objectId')]) {
+    // if(!this.msgsInDom[message.get('objectId')] && (message.get('roomname') === this.currentRoom || this.currentRoom === '')) {
+    if(!this.msgsInDom[message.get('_id')]) {
       //we can use the MessageView Backbone View that we created for each of the items in the collection
       //to do this we need to create a new instance of the MessageView for each item
       var messageView = new MessageView({model: message});
@@ -108,7 +129,7 @@ var MessagesView = Backbone.View.extend({
       this.$el.append($msgHtml);
       this.$el.scrollTop(this.$el[0].scrollHeight);
 
-      this.msgsInDom[message.get('objectId')] = true;
+      this.msgsInDom[message.get('_id')] = true;
 
     }
   }
@@ -131,8 +152,8 @@ var FormView = Backbone.View.extend({
     var $text = this.$('#newMessage');
 
     var msg = $text.val();
-    var name = window.location.search.replace('?username=','');
-    var room = 'lobby';
+    var name = $('#userName').val() || 'Guest';
+    var room = $('#currentRoom').text() === 'All Rooms' ? 'Lobby' : $('#currentRoom').text();
 
     var newMsg = {
       text: msg,
@@ -153,7 +174,7 @@ var FormView = Backbone.View.extend({
 
 var RoomView = Backbone.View.extend({
 
-  template: _.template('<li><a href="#!" class="roomLink"><%- roomname %></a></li>'),
+  template: _.template('<li><a class="roomLink"><%- roomname %></a></li>'),
 
   render: function() {
     
@@ -171,6 +192,17 @@ var RoomsView = Backbone.View.extend({
   initialize: function() {
     this.collection.on('sync',this.render, this);
     this.roomsInDom = {};
+  },
+
+  events: {
+    'click .roomLink': 'updateRoom'
+  },
+
+  updateRoom: function(prop) {
+    var newRoom = prop.toElement.text;
+    // debugger;
+    $('#currentRoom').text(newRoom);
+    this.collection.trigger('changingRoom',newRoom)
   },
 
   render: function() {
